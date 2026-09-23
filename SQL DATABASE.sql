@@ -568,4 +568,138 @@ SELECT * FROM Employee;
 SELECT e1.emp_name AS 'Eployee', e2.salary As 'Manager' FROM Employee e1 JOIN Employee e2
 ON e1.emp_id = e2.mgr_id;
 
+/* Subquery */
+
+SELECT * FROM student;
+SELECT * FROM batch;
+
+SELECT stud_name, stud_id, email from student where stud_id = (select stud_id FROM batch where marks = 78);
+SELECT stud_name, stud_id, email from student where stud_id > (select stud_id FROM batch where marks = 78);
+SELECT stud_name, stud_id, email from student where stud_id < (select stud_id FROM batch where marks = 80);
+SELECT stud_name, stud_id, email from student where stud_id <> (select stud_id FROM batch where marks = 80);
+SELECT stud_name, stud_id, email from student where stud_id >= (select stud_id FROM batch where marks = 78);
+SELECT stud_name, stud_id, email from student where stud_id <= (select stud_id FROM batch where marks = 78);
+
+INSERT INTO batch VALUES
+(102,1002,'DSDA-2026',62),
+(103,1003,'DSDA-2026',58),
+(104,1004,'DSDA-2026',39),
+(105,1005,'DSDA-2026',78);
+
+UPDATE batch 
+SET batch_name = 'CS-2026'
+WHERE batch_id = 1005;
+
+SELECT stud_name, stud_id, email from student where stud_id IN (SELECT stud_id FROM batch WHERE batch_name = 'CS-2026');
+SELECT stud_name, stud_id, email from student where stud_id >ANY (SELECT stud_id FROM batch WHERE batch_name = 'DSDA-2026');
+SELECT stud_name, stud_id, email from student where stud_id <ANY (SELECT stud_id FROM batch WHERE batch_name = 'DSDA-2026');
+SELECT stud_name, stud_id, email from student where stud_id >ALL (SELECT stud_id FROM batch WHERE batch_name = 'CS-2026');
+SELECT stud_name, stud_id, email from student where stud_id <ALL (SELECT stud_id FROM batch WHERE batch_name = 'CS-2026');
+
+/* Corelated sub query */ 
+SHOW tables;
+
+SELECT * FROM employee;
+ALTER TABLE employee
+ADD department VARCHAR(20);
+
+UPDATE employee
+SET department = 'HR'
+WHERE emp_id in (102);
+
+SELECT salary, emp_name, department FROM employee e1
+WHERE salary > (SELECT avg(salary) FROM employee e2 WHERE e2.department = e1.department);
+
+/* NOTE: Table alias is used when we have to compare two tables */
+/* 2nd lowest salary */
+SELECT min(salary) FROM employee
+WHERE salary > (SELECT min(salary) FROM employee);
+
+/* 2nd Highest salary */
+SELECT max(salary) FROM employee
+WHERE salary < (SELECT max(salary) FROM employee);
+
+/* Highest salary from each department */
+SELECT salary, emp_name, department FROM employee e1
+WHERE salary = (SELECT max(salary) FROM employee e2 WHERE e2.department = e1.department);
+
+/* Lowest salary from each department */
+SELECT salary, emp_name, department FROM employee e1
+WHERE salary = (SELECT min(salary) FROM employee e2 WHERE e2.department = e1.department);
+
+/* View */
+/* Simple View */
+
+CREATE VIEW vw_emp
+AS
+SELECT emp_id, emp_name, email, department FROM employee;
+
+SELECT * FROM vw_emp;
+INSERT INTO vw_emp VALUES
+(105, 'Omkar', 'omkar@gmail.com', 'HR');
+
+UPDATE vw_emp
+SET department = "Finance"
+WHERE emp_id = 104;
+
+DELETE FROM vw_emp 
+WHERE emp_id = 105;
+
+/* Complex View */
+
+CREATE VIEW vw_emp1
+AS 
+SELECT department, sum(salary) FROM employee
+GROUP BY department;
+
+/* With check option */
+CREATE VIEW vw_emp2
+AS 
+SELECT emp_id, emp_name, email, department FROM employee
+WHERE emp_id > 101;
+
+INSERT INTO vw_emp2 VALUES
+(106,'Qazi','qazi@gmail.com','sales');
+
+SELECT * FROM vw_emp2;
+SELECT * FROM employee;
+
+CREATE OR REPLACE VIEW vw_emp2
+AS 
+SELECT emp_id, emp_name, email, department FROM employee
+WHERE emp_id > 101
+WITH CHECK OPTION;
+
+UPDATE employee
+SET salary = 17000 
+WHERE emp_id = 106;
+
+SELECT * FROM employee;
+
+CREATE OR REPLACE VIEW vw_stud_batch
+AS
+SELECT stud_name, email, city, marks, batch_name 
+FROM student JOIN batch 
+on student.stud_id = batch.stud_id;
+
+SELECT * FROM vw_stud_batch;
+
+CREATE OR REPLACE VIEW vw_stud_name
+AS
+SELECT stud_name, email, batch_name
+FROM student LEFT JOIN BATCH
+ON student.stud_id = batch.stud_id;
+
+SELECT * FROM vw_stud_name;
+SELECT * FROM student;
+SELECT * FROM batch;
+
+DROP VIEW vw_stud_batch;
+
+/* Creating an Index */
+CREATE INDEX idx_stud_name ON student (stud_name);
+
+DESC demo1;
+CREATE UNIQUE INDEX idx_id ON demo1 (id);
+
 

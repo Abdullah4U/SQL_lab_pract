@@ -407,4 +407,198 @@ FROM Accounts
 GROUP BY AccountType
 HAVING SUM(Balance) > 25000;
 
+/* LAB 7 */
+
+Select
+    LoanID,
+		CustomerID, LoanAmount, RANK() OVER(
+        ORDER BY LoanAmount DESC
+    ) AS LoanRank
+FROM Loans;
+
+SELECT
+    LoanID,
+    CustomerID,
+    LoanAmount,
+    DENSE_RANK() OVER(
+        ORDER BY LoanAmount DESC
+    ) AS DenseRank
+FROM Loans;
+
+SELECT
+    LoanID,
+    CustomerID,
+    LoanAmount,
+    ROW_NUMBER() OVER(
+        ORDER BY LoanAmount DESC
+    ) AS RowNumber
+FROM Loans;
+
+SELECT
+    LoanID,
+    CustomerID,
+    LoanAmount,
+    ROW_NUMBER() OVER(
+        PARTITION BY CustomerID
+        ORDER BY LoanAmount DESC
+    ) AS RowNum
+FROM Loans;
+
+SELECT
+    LoanID, CustomerID,LoanAmount,
+    SUM(LoanAmount) OVER(
+        ORDER BY LoanAmount DESC
+    ) AS RunningTotal
+FROM Loans;
+
+SELECT
+    LoanID,
+    CustomerID,
+    LoanAmount,
+    LAG(LoanAmount) OVER(
+        ORDER BY LoanAmount DESC
+    ) AS PreviousLoanAmount
+FROM Loans;
+
+SELECT
+    LoanID, CustomerID, LoanAmount,
+    LEAD(LoanAmount) OVER(
+        ORDER BY LoanAmount DESC
+    ) AS NextLoanAmount
+FROM Loans;
+
+/* LAB 8 */
+
+SELECT
+    a.AccountID, a.AccountType, a.Balance,
+    t.TransactionID,
+    t.TransactionDate,
+    t.TransactionType,
+    t.Amount
+FROM Accounts a
+INNER JOIN Transactions t
+ON a.AccountID = t.AccountID;
+
+SELECT
+    a.AccountID, a.AccountType, a.Balance,
+    t.TransactionID,
+    t.TransactionDate,
+    t.TransactionType,
+    t.Amount
+FROM Accounts a
+LEFT JOIN Transactions t
+ON a.AccountID = t.AccountID;
+
+SELECT
+    a.AccountID, a.AccountType, a.Balance,
+    t.TransactionID,
+    t.TransactionDate,
+    t.TransactionType,
+    t.Amount
+FROM Accounts a
+INNER JOIN Transactions t
+ON a.AccountID = t.AccountID
+WHERE t.TransactionType = 'Credit';
+
+SELECT
+    a.AccountID, a.AccountType, a.Balance,
+    t.TransactionID,
+    t.TransactionDate,
+    t.TransactionType,
+    t.Amount
+FROM Accounts a
+INNER JOIN Transactions t
+ON a.AccountID = t.AccountID
+WHERE a.Balance > 30000
+ORDER BY a.Balance DESC;
+
+/* LAB 9 */
+
+SELECT AVG(Amount)
+FROM Transactions;
+
+SELECT *
+FROM Transactions
+WHERE Amount >
+(
+    SELECT AVG(Amount)
+    FROM Transactions
+);
+
+SELECT
+    AccountID,
+    AccountType,
+    Balance,
+    CustomerID
+FROM Accounts
+WHERE Balance >
+(
+    SELECT AVG(Balance)
+    FROM Accounts
+)
+ORDER BY Balance DESC;
+
+SELECT
+    AccountID,
+    AccountType,
+    Balance,
+    CustomerID
+FROM Accounts
+WHERE AccountID IN
+(
+    SELECT AccountID
+    FROM Transactions
+    WHERE TransactionType = 'Deposit'
+);
+
+SELECT
+    AccountID,
+    AccountType,
+    Balance,
+    CustomerID
+FROM Accounts
+WHERE Balance =
+(
+    SELECT MAX(Balance)
+    FROM Accounts
+);
+
+/* LAB 10 */
+
+CREATE VIEW High_Balance_Accounts AS
+SELECT
+    AccountID,
+    AccountType,
+    Balance,
+    CustomerID
+FROM Accounts
+WHERE Balance > 30000;
+
+SELECT *
+FROM High_Balance_Accounts;
+
+CREATE OR REPLACE VIEW High_Balance_Accounts AS
+SELECT
+    a.AccountID, a.AccountType, a.Balance, a.CustomerID,
+    t.TransactionID,
+    t.TransactionDate,
+    t.TransactionType,
+    t.Amount
+FROM Accounts a
+INNER JOIN Transactions t
+ON a.AccountID = t.AccountID
+WHERE a.Balance > 30000;
+
+SELECT
+    AccountID,
+    AccountType,
+    Balance,
+    CustomerID,
+    TransactionID,
+    TransactionDate,
+    TransactionType,
+    Amount
+FROM High_Balance_Accounts
+ORDER BY Balance DESC;
+
 
